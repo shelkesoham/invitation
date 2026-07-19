@@ -1,0 +1,10 @@
+{
+  "description": "A premium, animated Ganpati Festival invitation site offering event details, RSVP, gallery, blessings, and festive Indian-themed interactive features for guests.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
