@@ -180,14 +180,11 @@ export default function App() {
               </div>
               <div className="flex flex-col items-center gap-3">
                 <MapPin className="text-amber-500" size={28} />
-                <span>शेळके निवास, मुंबई</span>
+                <span>मु. पो. रांगणा तुळसुली, कदमवाडी</span>
               </div>
             </div>
 
             <div data-html2canvas-ignore className="flex flex-wrap justify-center gap-4">
-              <button className="flex items-center gap-2 bg-amber-600 hover:bg-amber-500 text-stone-950 px-6 py-3 rounded-full font-medium transition-colors">
-                <MapPin size={18} /> नकाशात पहा
-              </button>
               <button
                 onClick={saveInvitation}
                 disabled={isSaving}
