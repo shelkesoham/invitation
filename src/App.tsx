@@ -28,32 +28,46 @@ export default function App() {
     setIsSaving(true);
     try {
       const bg = '#1c1917';
+      // html2canvas can't render Tailwind's gradient `bg-clip-text` title — it
+      // paints the gradient as a solid box. During capture only, force any
+      // clipped-text element to plain solid text so it renders correctly.
+      const fixGradientText = (clonedDoc: Document) => {
+        clonedDoc.querySelectorAll<HTMLElement>('h1, h2').forEach((el) => {
+          if (el.className.includes('bg-clip-text')) {
+            el.style.backgroundImage = 'none';
+            el.style.color = '#fbbf24';
+            (el.style as any).webkitTextFillColor = '#fbbf24';
+          }
+        });
+      };
+
       // Capture both sections separately...
       const heroCanvas = await html2canvas(heroRef.current, {
         backgroundColor: bg,
         scale: 2,
         useCORS: true,
+        onclone: fixGradientText,
       });
       const cardCanvas = await html2canvas(cardRef.current, {
         backgroundColor: bg,
         scale: 2,
         useCORS: true,
+        onclone: fixGradientText,
       });
 
-      // ...then stitch them into one tall image (hero on top, card below).
+      // ...then stitch them into one seamless image (hero on top, card below).
       const width = Math.max(heroCanvas.width, cardCanvas.width);
-      const pad = 40; // gap between the two sections
       const combined = document.createElement('canvas');
       combined.width = width;
-      combined.height = heroCanvas.height + cardCanvas.height + pad;
+      combined.height = heroCanvas.height + cardCanvas.height;
 
       const ctx = combined.getContext('2d');
       if (!ctx) throw new Error('canvas context unavailable');
       ctx.fillStyle = bg;
       ctx.fillRect(0, 0, combined.width, combined.height);
-      // center each section horizontally
+      // center each section horizontally, no gap between them
       ctx.drawImage(heroCanvas, (width - heroCanvas.width) / 2, 0);
-      ctx.drawImage(cardCanvas, (width - cardCanvas.width) / 2, heroCanvas.height + pad);
+      ctx.drawImage(cardCanvas, (width - cardCanvas.width) / 2, heroCanvas.height);
 
       const dataUrl = combined.toDataURL('image/png');
       const link = document.createElement('a');
