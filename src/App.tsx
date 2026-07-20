@@ -19,19 +19,43 @@ export default function App() {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const heroRef = useRef<HTMLDivElement | null>(null);
   const cardRef = useRef<HTMLDivElement | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
   const saveInvitation = async () => {
-    if (!cardRef.current) return;
+    if (!heroRef.current || !cardRef.current) return;
     setIsSaving(true);
     try {
-      const canvas = await html2canvas(cardRef.current, {
-        backgroundColor: '#1c1917',
+      const bg = '#1c1917';
+      // Capture both sections separately...
+      const heroCanvas = await html2canvas(heroRef.current, {
+        backgroundColor: bg,
         scale: 2,
         useCORS: true,
       });
-      const dataUrl = canvas.toDataURL('image/png');
+      const cardCanvas = await html2canvas(cardRef.current, {
+        backgroundColor: bg,
+        scale: 2,
+        useCORS: true,
+      });
+
+      // ...then stitch them into one tall image (hero on top, card below).
+      const width = Math.max(heroCanvas.width, cardCanvas.width);
+      const pad = 40; // gap between the two sections
+      const combined = document.createElement('canvas');
+      combined.width = width;
+      combined.height = heroCanvas.height + cardCanvas.height + pad;
+
+      const ctx = combined.getContext('2d');
+      if (!ctx) throw new Error('canvas context unavailable');
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, combined.width, combined.height);
+      // center each section horizontally
+      ctx.drawImage(heroCanvas, (width - heroCanvas.width) / 2, 0);
+      ctx.drawImage(cardCanvas, (width - cardCanvas.width) / 2, heroCanvas.height + pad);
+
+      const dataUrl = combined.toDataURL('image/png');
       const link = document.createElement('a');
       link.href = dataUrl;
       link.download = 'ganpati-invitation.png';
@@ -114,11 +138,12 @@ export default function App() {
         {/* Decorative Background Pattern */}
         <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')] mix-blend-overlay" />
 
-        <motion.div 
+        <motion.div
+          ref={heroRef}
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1.5, ease: "easeOut" }}
-          className="relative z-20 text-center px-6"
+          className="relative z-20 text-center px-6 py-12"
         >
           <div className="w-40 h-40 md:w-56 md:h-56 mx-auto mb-8 bg-amber-500/20 rounded-full flex items-center justify-center border-2 border-amber-500/40 shadow-[0_0_50px_rgba(245,158,11,0.3)] overflow-hidden">
              <img
